@@ -115,7 +115,7 @@ class InputController:
             return int(col), int(row)
         return -1, -1
 
-def handle_mouse(self, pos, button) -> None:
+    def handle_mouse(self, pos, button) -> None:
         # TODO: Handle mouse button events: left=reveal, right=flag, middle=neighbor highlight in here
         
         # 1. 마우스 좌표를 그리드 좌표로 변환

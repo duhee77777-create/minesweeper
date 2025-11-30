@@ -104,7 +104,7 @@ class Board:
         for mc, mr in mine_locs:
             idx = self.index(mc, mr)
             self.cells[idx].state.is_mine = True
-            self.mines_placed = True
+            self._mines_placed = True
 
         # 4. 모든 셀에 대해 인접 지뢰 개수(Adjacency) 계산
         for r in range(self.rows):
@@ -127,7 +127,7 @@ class Board:
             return
 
         # 2. 첫 클릭인 경우 지뢰 배치
-        if not self.mines_placed:
+        if not self._mines_placed:
             self.place_mines(col, row)
 
         idx = self.index(col, row)
