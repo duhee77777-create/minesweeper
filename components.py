@@ -90,19 +90,36 @@ class Board:
 
     def place_mines(self, safe_col: int, safe_row: int) -> None:
         # TODO: Place mines randomly, guaranteeing the first click and its neighbors are safe. And Compute adjacency counts
-        # all_positions = [(c, r) for r in range(self.rows) for c in range(self.cols)]
-        # forbidden = {(safe_col, safe_row)} | set(self.neighbors(safe_col, safe_row))
-        # pool = [p for p in all_positions if p not in forbidden]
-        # random.shuffle(pool)
+        # 1. 지뢰 배치 제외 구역 설정: 첫 클릭 위치 + 주변 8칸
+        forbidden = {(safe_col, safe_row)} | set(self.neighbors(safe_col, safe_row))
         
-        # Compute adjacency counts
-        # for r in range(self.rows):
-        #     for c in range(self.cols):
+        # 2. 전체 좌표 중 제외 구역을 뺀 후보군(Pool) 생성
+        all_positions = [(c, r) for r in range(self.rows) for c in range(self.cols)]
+        pool = [p for p in all_positions if p not in forbidden]
+        
+        # 3. 랜덤 샘플링으로 지뢰 배치
+        count = min(self.num_mines, len(pool))
+        mine_locs = random.sample(pool, count)
+        
+        for mc, mr in mine_locs:
+            idx = self.index(mc, mr)
+            self.cells[idx].state.is_mine = True
+            self.mines_placed = True
 
-        # self._mines_placed = True
-
-        pass
-
+        # 4. 모든 셀에 대해 인접 지뢰 개수(Adjacency) 계산
+        for r in range(self.rows):
+            for c in range(self.cols):
+                idx = self.index(c, r)
+                cell = self.cells[idx]
+                
+                if not cell.state.is_mine:
+                    mine_count = 0
+                    for nc, nr in self.neighbors(c, r):
+                        n_idx = self.index(nc, nr)
+                        if self.cells[n_idx].state.is_mine:
+                            mine_count += 1
+                    cell.state.adjacent = mine_count
+                    
     def reveal(self, col: int, row: int) -> None:
         # TODO: Reveal a cell; if zero-adjacent, iteratively flood to neighbors.
         # if not self.is_inbounds(col, row):
