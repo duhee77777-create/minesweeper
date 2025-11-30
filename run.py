@@ -115,33 +115,49 @@ class InputController:
             return int(col), int(row)
         return -1, -1
 
-    def handle_mouse(self, pos, button) -> None:
-        # TODO: Handle mouse button events: left=reveal, right=flag, middle=neighbor highlight  in here
-        # col, row = self.pos_to_grid(pos[0], pos[1])
-        # if col == -1:
-        #     return
-        # game = self.game
-        # if button == config.mouse_left:
-        #     game.highlight_targets.clear()
+def handle_mouse(self, pos, button) -> None:
+        # TODO: Handle mouse button events: left=reveal, right=flag, middle=neighbor highlight in here
         
-        #         if not game.started:
-        #             game.started = 
-        #             game.start_ticks_ms = pygame.time.get_ticks()
+        # 1. 마우스 좌표를 그리드 좌표로 변환
+        col, row = self.pos_to_grid(pos[0], pos[1])
+        
+        # 2. 보드 바깥을 클릭했으면 무시
+        if col == -1:
+            return
+        
+        game = self.game
+        
+        # 3. 좌클릭: 셀 오픈 
+        if button == config.mouse_left:
+            game.highlight_targets.clear() # 기존 하이라이트 제거
+            
+            # 게임이 시작되지 않았다면 지금 시작 (타이머 작동)
+            if not game.started:
+                game.started = True
+                game.start_ticks_ms = pygame.time.get_ticks()
+            
+            # 셀 오픈
+            game.board.reveal(col, row)
     
-        # elif button == config.mouse_right:
-        #     game.highlight_targets.clear()
-        #        
-        # elif button == config.mouse_middle:
-        #         neighbors = []
-        #         game.highlight_targets = {
-        #             (nc, nr)
-        #             for (nc, nr) in neighbors
-        #             if not game.board.cells[game.board.index(nc, nr)].state.is_revealed
-        #         }
-        
-        #         game.highlight_until_ms = pygame.time.get_ticks() + config.highlight_duration_ms
-
-        pass
+        # 4. 우클릭: 깃발 토글 
+        elif button == config.mouse_right:
+            game.highlight_targets.clear()
+            game.board.toggle_flag(col, row)
+                
+        # 5. 휠 클릭: 주변 미오픈 셀 하이라이트
+        elif button == config.mouse_middle:
+            # 주변 이웃 좌표 가져오기
+            neighbors = game.board.neighbors(col, row)
+            
+            # 아직 오픈되지 않은 이웃 셀들만 하이라이트 대상으로 설정 
+            game.highlight_targets = {
+                (nc, nr)
+                for (nc, nr) in neighbors
+                if not game.board.cells[game.board.index(nc, nr)].state.is_revealed
+            }
+            
+            # 하이라이트 지속 시간 설정
+            game.highlight_until_ms = pygame.time.get_ticks() + config.highlight_duration_ms
 
 class Game:
     """Main application object orchestrating loop and high-level state."""
