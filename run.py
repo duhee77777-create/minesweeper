@@ -125,6 +125,7 @@ class InputController:
         if col == -1:
             return
         
+        
         game = self.game
         
         # 3. 좌클릭: 셀 오픈 
