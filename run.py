@@ -187,6 +187,25 @@ class Game:
         self.start_ticks_ms = 0
         self.end_ticks_ms = 0
 
+    def change_difficulty(self, level: int):
+        """Change difficulty level and reset the game."""
+        if level not in config.DIFFICULTY_PRESETS:
+            return
+        
+        config.current_difficulty = level
+        config.cols, config.rows, config.num_mines = config.get_difficulty_settings(level)
+
+        config.width = config.margin_left + config.cols * config.cell_size + config.margin_right
+        config.height = config.margin_top + config.rows * config.cell_size + config.margin_bottom
+        config.display_dimension = (config.width, config.height)
+
+        self.screen = pygame.display.set_mode(config.display_dimension)
+
+        self.reset()
+
+        difficulty_name = config.DIFFICULTY_PRESETS[level]["name"]
+        pygame.display.set_caption(f"{config.title} - {difficulty_name}")
+
     def _elapsed_ms(self) -> int:
         """Return elapsed time in milliseconds (stops when game ends)."""
         if not self.started:
@@ -234,6 +253,12 @@ class Game:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
                     self.reset()
+                elif event.key == pygame.K_1:
+                    self.change_difficulty(1)
+                elif event.key == pygame.K_2:
+                    self.change_difficulty(2)
+                elif event.key == pygame.K_3:
+                    self.change_difficulty(3)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.input.handle_mouse(event.pos, event.button)
         if (self.board.game_over or self.board.win) and self.started and not self.end_ticks_ms:

@@ -17,10 +17,22 @@ Groups:
 # Display settings
 fps = 60
 
-# Grid settings
-cols = 16
-rows = 16
-num_mines = 40
+# Difficulty presets
+DIFFICULTY_PRESETS = {
+    1: {"cols": 10, "rows": 10, "mines": 10, "name": "초급"},
+    2: {"cols": 15, "rows": 15, "mines": 40, "name": "중급"},
+    3: {"cols": 20, "rows": 20, "mines": 80, "name": "고급"},
+}
+
+# Current difficulty (default: 중급)
+current_difficulty = 2
+
+# Grid settings (initialized from current difficulty)
+def get_difficulty_settings(level):
+    preset = DIFFICULTY_PRESETS.get(level, DIFFICULTY_PRESETS[2])
+    return preset["cols"], preset["rows"], preset["mines"]
+
+cols, rows, num_mines = get_difficulty_settings(current_difficulty)
 
 # Cell size and margins
 cell_size = 32
