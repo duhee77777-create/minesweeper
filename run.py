@@ -206,6 +206,32 @@ class Game:
         difficulty_name = config.DIFFICULTY_PRESETS[level]["name"]
         pygame.display.set_caption(f"{config.title} - {difficulty_name}")
 
+    def show_hint(self):
+        """지뢰가 아니면서 아직 열리지 않은 셀 중 하나를 랜덤하게 자동으로 열어줌"""
+        # 게임이 끝났거나 시작하지 않았으면 무시
+        if self.board.game_over or self.board.win:
+            return
+        
+        # 지뢰가 아니면서 아직 열리지 않은 셀들 수집
+        unopened_safe_cells = []
+        for cell in self.board.cells:
+            if not cell.state.is_mine and not cell.state.is_revealed and not cell.state.is_flagged:
+                unopened_safe_cells.append((cell.col, cell.row))
+        
+        # 열 수 있는 셀이 없으면 무시
+        if not unopened_safe_cells:
+            return
+        
+        # 게임이 시작되지 않았다면 지금 시작
+        if not self.started:
+            self.started = True
+            self.start_ticks_ms = pygame.time.get_ticks()
+        
+        # 랜덤하게 하나 선택해서 열기
+        import random
+        col, row = random.choice(unopened_safe_cells)
+        self.board.reveal(col, row)
+
     def _elapsed_ms(self) -> int:
         """Return elapsed time in milliseconds (stops when game ends)."""
         if not self.started:
@@ -259,6 +285,8 @@ class Game:
                     self.change_difficulty(2)
                 elif event.key == pygame.K_3:
                     self.change_difficulty(3)
+                elif event.key == pygame.K_h:
+                    self.show_hint()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.input.handle_mouse(event.pos, event.button)
         if (self.board.game_over or self.board.win) and self.started and not self.end_ticks_ms:
