@@ -184,6 +184,9 @@ class Board:
 
     def _check_win(self) -> None:
         """Set win=True when all non-mine cells have been revealed."""
+        # Count revealed cells
+        self.revealed_count = sum(1 for cell in self.cells if cell.state.is_revealed)
+        
         total_cells = self.cols * self.rows
         if self.revealed_count == total_cells - self.num_mines and not self.game_over:
             self.win = True

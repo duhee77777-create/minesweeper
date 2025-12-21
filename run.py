@@ -71,18 +71,24 @@ class Renderer:
                 )
         pygame.draw.rect(self.screen, config.color_grid, rect, 1)
 
-    def draw_header(self, remaining_mines: int, time_text: str) -> None:
-        """Draw the header bar containing remaining mines and elapsed time."""
+    def draw_header(self, remaining_mines: int, time_text: str, best_score_text: str) -> None:
+        """Draw the header bar containing remaining mines, elapsed time, and best score."""
         pygame.draw.rect(
             self.screen,
             config.color_header,
             Rect(0, 0, config.width, config.margin_top - 4),
         )
         left_text = f"Mines: {remaining_mines}"
+        center_text = f"Best: {best_score_text}"
         right_text = f"Time: {time_text}"
+        
         left_label = self.header_font.render(left_text, True, config.color_header_text)
+        center_label = self.header_font.render(center_text, True, config.color_best_score)
         right_label = self.header_font.render(right_text, True, config.color_header_text)
+        
         self.screen.blit(left_label, (10, 12))
+        center_x = (config.width - center_label.get_width()) // 2
+        self.screen.blit(center_label, (center_x, 12))
         self.screen.blit(right_label, (config.width - right_label.get_width() - 10, 12))
 
     def draw_result_overlay(self, text: str | None) -> None:
@@ -176,6 +182,7 @@ class Game:
         self.started = False
         self.start_ticks_ms = 0
         self.end_ticks_ms = 0
+        self.best_scores = {1: 0, 2: 0, 3: 0}  # 난이도별 베스트 스코어 (초 단위)
 
     def reset(self):
         """Reset the game state and start a new board."""
@@ -262,7 +269,15 @@ class Game:
         self.screen.fill(config.color_bg)
         remaining = max(0, config.num_mines - self.board.flagged_count())
         time_text = self._format_time(self._elapsed_ms())
-        self.renderer.draw_header(remaining, time_text)
+        
+        # 베스트 스코어를 시간 형식으로 변환
+        best_score = self.best_scores.get(config.current_difficulty, 0)
+        if best_score > 0:
+            best_score_text = self._format_time(best_score * 1000)  # 초를 밀리초로 변환
+        else:
+            best_score_text = "--:--"
+        
+        self.renderer.draw_header(remaining, time_text, best_score_text)
         now = pygame.time.get_ticks()
         for r in range(self.board.rows):
             for c in range(self.board.cols):
@@ -289,8 +304,20 @@ class Game:
                     self.show_hint()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.input.handle_mouse(event.pos, event.button)
+        
+        # 게임 종료 시 베스트 스코어 갱신
         if (self.board.game_over or self.board.win) and self.started and not self.end_ticks_ms:
             self.end_ticks_ms = pygame.time.get_ticks()
+            
+            # 게임 클리어 시에만 베스트 스코어 갱신
+            if self.board.win:
+                elapsed_seconds = self._elapsed_ms() // 1000
+                current_best = self.best_scores.get(config.current_difficulty, 0)
+                
+                # 첫 기록이거나 더 빠른 기록이면 갱신
+                if current_best == 0 or elapsed_seconds < current_best:
+                    self.best_scores[config.current_difficulty] = elapsed_seconds
+        
         self.draw()
         self.clock.tick(config.fps)
         return True

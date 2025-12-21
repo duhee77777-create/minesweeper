@@ -60,6 +60,7 @@ color_header_text = (240, 240, 240)
 color_header = (32, 34, 36)
 color_highlight = (70, 130, 180)
 color_result = (242, 242, 0)
+color_best_score = (100, 255, 100)
 
 # Number colors 1~8
 number_colors = {
