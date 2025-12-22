@@ -22,6 +22,13 @@ cols = 16
 rows = 16
 num_mines = 40
 
+# Difficulty presets
+difficulties = {
+    'beginner': {'cols': 10, 'rows': 10, 'mines': 10},
+    'intermediate': {'cols': 15, 'rows': 15, 'mines': 40},
+    'expert': {'cols': 20, 'rows': 20, 'mines': 80},
+}
+
 # Cell size and margins
 cell_size = 32
 margin_left = 20
@@ -80,4 +87,3 @@ result_overlay_alpha = 120
 
 # Misc
 title = "Minesweeper"
-
