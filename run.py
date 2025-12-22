@@ -71,18 +71,23 @@ class Renderer:
                 )
         pygame.draw.rect(self.screen, config.color_grid, rect, 1)
 
-    def draw_header(self, remaining_mines: int, time_text: str) -> None:
-        """Draw the header bar containing remaining mines and elapsed time."""
+    def draw_header(self, remaining_mines: int, time_text: str, best_score: int) -> None:
+        """Draw the header bar containing remaining mines, elapsed time, and best score."""
         pygame.draw.rect(
             self.screen,
             config.color_header,
             Rect(0, 0, config.width, config.margin_top - 4),
         )
         left_text = f"Mines: {remaining_mines}"
-        right_text = f"Time: {time_text}"
+        center_text = f"Time: {time_text}"
+        right_text = f"Best: {best_score}s" if best_score > 0 else "Best: ---"
+        
         left_label = self.header_font.render(left_text, True, config.color_header_text)
+        center_label = self.header_font.render(center_text, True, config.color_header_text)
         right_label = self.header_font.render(right_text, True, config.color_header_text)
+        
         self.screen.blit(left_label, (10, 12))
+        self.screen.blit(center_label, (config.width // 2 - center_label.get_width() // 2, 12))
         self.screen.blit(right_label, (config.width - right_label.get_width() - 10, 12))
 
     def draw_result_overlay(self, text: str | None) -> None:
@@ -176,6 +181,33 @@ class Game:
         self.started = False
         self.start_ticks_ms = 0
         self.end_ticks_ms = 0
+        self.best_score_file = "minesweeper_best_score.txt"
+        self.best_score = self._load_best_score()
+
+    def _load_best_score(self) -> int:
+        """Load best score from file. Returns 0 if file doesn't exist."""
+        try:
+            with open(self.best_score_file, 'r') as f:
+                return int(f.read().strip())
+        except (FileNotFoundError, ValueError):
+            return 0
+
+    def _save_best_score(self, score: int) -> None:
+        """Save best score to file."""
+        with open(self.best_score_file, 'w') as f:
+            f.write(str(score))
+
+    def _update_best_score(self) -> None:
+        """Update best score if current game time is better."""
+        if not self.board.win:
+            return
+        
+        current_score = self._elapsed_ms() // 1000  # 초 단위로 변환
+        
+        # 최고 기록이 없거나, 현재 기록이 더 빠르면 갱신
+        if self.best_score == 0 or current_score < self.best_score:
+            self.best_score = current_score
+            self._save_best_score(current_score)
 
     def reset(self):
         """Reset the game state and start a new board."""
@@ -237,7 +269,7 @@ class Game:
         self.screen.fill(config.color_bg)
         remaining = max(0, config.num_mines - self.board.flagged_count())
         time_text = self._format_time(self._elapsed_ms())
-        self.renderer.draw_header(remaining, time_text)
+        self.renderer.draw_header(remaining, time_text, self.best_score)
         now = pygame.time.get_ticks()
         for r in range(self.board.rows):
             for c in range(self.board.cols):
@@ -260,10 +292,16 @@ class Game:
                     self.change_difficulty('intermediate')
                 elif event.key == pygame.K_3:
                     self.change_difficulty('expert')
+                elif event.key == pygame.K_h:
+                    if not self.started:
+                        self.started = True
+                        self.start_ticks_ms = pygame.time.get_ticks()
+                    self.board.get_hint()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.input.handle_mouse(event.pos, event.button)
         if (self.board.game_over or self.board.win) and self.started and not self.end_ticks_ms:
             self.end_ticks_ms = pygame.time.get_ticks()
+            self._update_best_score()
         self.draw()
         self.clock.tick(config.fps)
         return True
