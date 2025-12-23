@@ -123,6 +123,8 @@ class InputController:
     def handle_mouse(self, pos, button) -> None:
         # TODO: Handle mouse button events: left=reveal, right=flag, middle=neighbor highlight in here
         
+        if self.game.board.game_over or self.game.board.win:
+            return
         # 1. 마우스 좌표를 그리드 좌표로 변환
         col, row = self.pos_to_grid(pos[0], pos[1])
         
@@ -302,6 +304,7 @@ class Game:
         if (self.board.game_over or self.board.win) and self.started and not self.end_ticks_ms:
             self.end_ticks_ms = pygame.time.get_ticks()
             self._update_best_score()
+            print(f"Game Ended! Win: {self.board.win}, Over: {self.board.game_over}")
         self.draw()
         self.clock.tick(config.fps)
         return True
