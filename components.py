@@ -140,6 +140,9 @@ class Board:
         # 4. 셀 오픈 처리
         cell.state.is_revealed = True
 
+        if not cell.state.is_mine:
+            self.revealed_count += 1
+
         # 5. 지뢰를 밟은 경우
         if cell.state.is_mine:
             self.game_over = True
@@ -183,10 +186,45 @@ class Board:
                 cell.state.is_revealed = True
 
     def _check_win(self) -> None:
-        """Set win=True when all non-mine cells have been revealed."""
+        """모든 지뢰가 아닌 셀이 열렸을 때 승리 처리."""
+        if self.game_over:
+            return
+
         total_cells = self.cols * self.rows
-        if self.revealed_count == total_cells - self.num_mines and not self.game_over:
+        count_win = self.revealed_count >= (total_cells - self.num_mines)
+        
+        actual_revealed = sum(1 for cell in self.cells if cell.state.is_revealed and not cell.state.is_mine)
+        scan_win = actual_revealed >= (total_cells - self.num_mines)
+
+        if (count_win or scan_win):
             self.win = True
             for cell in self.cells:
-                if not cell.state.is_revealed and not cell.state.is_mine:
-                    cell.state.is_revealed = True
+                if cell.state.is_mine:
+                    cell.state.is_flagged = True
+
+    def get_hint(self) -> bool:
+        """Reveal a random safe (non-mine, unrevealed) cell as a hint.
+        
+        Returns:
+            True if a hint was provided, False if no safe cells are available.
+        """
+        if not self._mines_placed:
+            return False
+        
+        if self.game_over or self.win:
+            return False
+        
+        # 지뢰가 아니면서 아직 열리지 않은 모든 칸 수집
+        safe_unrevealed = []
+        for cell in self.cells:
+            if not cell.state.is_mine and not cell.state.is_revealed:
+                safe_unrevealed.append((cell.col, cell.row))
+        
+        # 힌트를 줄 칸이 없으면 False 반환
+        if not safe_unrevealed:
+            return False
+        
+        # 랜덤하게 하나 선택하여 열기
+        col, row = random.choice(safe_unrevealed)
+        self.reveal(col, row)
+        return True
