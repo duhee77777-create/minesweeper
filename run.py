@@ -294,6 +294,7 @@ class Game:
                     self.change_difficulty('intermediate')
                 elif event.key == pygame.K_3:
                     self.change_difficulty('expert')
+
                 elif event.key == pygame.K_h:
                     if not self.started:
                         self.started = True
@@ -318,6 +319,7 @@ def main() -> int:
         running = game.run_step()
     pygame.quit()
     return 0
+
 
 
 if __name__ == "__main__":
