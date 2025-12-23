@@ -190,3 +190,30 @@ class Board:
             for cell in self.cells:
                 if not cell.state.is_revealed and not cell.state.is_mine:
                     cell.state.is_revealed = True
+
+    def get_hint(self) -> bool:
+        """Reveal a random safe (non-mine, unrevealed) cell as a hint.
+        
+        Returns:
+            True if a hint was provided, False if no safe cells are available.
+        """
+        if not self._mines_placed:
+            return False
+        
+        if self.game_over or self.win:
+            return False
+        
+        # 지뢰가 아니면서 아직 열리지 않은 모든 칸 수집
+        safe_unrevealed = []
+        for cell in self.cells:
+            if not cell.state.is_mine and not cell.state.is_revealed:
+                safe_unrevealed.append((cell.col, cell.row))
+        
+        # 힌트를 줄 칸이 없으면 False 반환
+        if not safe_unrevealed:
+            return False
+        
+        # 랜덤하게 하나 선택하여 열기
+        col, row = random.choice(safe_unrevealed)
+        self.reveal(col, row)
+        return True
