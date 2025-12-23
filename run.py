@@ -265,6 +265,7 @@ class Game:
                         self.started = True
                         self.start_ticks_ms = pygame.time.get_ticks()
                     self.board.get_hint()
+
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.input.handle_mouse(event.pos, event.button)
         if (self.board.game_over or self.board.win) and self.started and not self.end_ticks_ms:
