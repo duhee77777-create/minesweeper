@@ -22,6 +22,13 @@ cols = 16
 rows = 16
 num_mines = 40
 
+# Difficulty presets
+difficulties = {
+    'beginner': {'cols': 10, 'rows': 10, 'mines': 10},
+    'intermediate': {'cols': 15, 'rows': 15, 'mines': 40},
+    'expert': {'cols': 20, 'rows': 20, 'mines': 80},
+}
+
 # Cell size and margins
 cell_size = 32
 margin_left = 20
@@ -55,10 +62,10 @@ number_colors = {
     2: (56, 142, 60),    # green
     3: (211, 47, 47),    # red
     4: (123, 31, 162),   # purple
-    5: (255, 143, 0),    # orange
-    6: (0, 151, 167),    # cyan
-    7: (85, 85, 85),     # gray
-    8: (0, 0, 0),        # black
+    5: (123, 31, 162),   # purple
+    6: (123, 31, 162),   # purple
+    7: (123, 31, 162),   # purple
+    8: (123, 31, 162),   # purple
 }
 
 # Text / UI
@@ -80,4 +87,3 @@ result_overlay_alpha = 120
 
 # Misc
 title = "Minesweeper"
-
